@@ -140,7 +140,7 @@ func isPictureFormat(path string) (string,string,string) {
 	}
 }
 
-func exeute()  {
+func execute()  {
 	/** 获取输入 */
 	//str := ""
 	//fmt.Scanln (&str) /** 不要使用 scanf，它不会并以一个新行结束输入 */
@@ -151,7 +151,7 @@ func exeute()  {
 	strPice := strings.Split(string(data)," ") /** 空格 */
 	if len(strPice) < 3 {
 		fmt.Printf("输入有误，参数数量不足,请重新输入或退出程序：")
-		exeute()
+		execute()
 		return
 	}
 
@@ -179,6 +179,7 @@ func exeute()  {
 			inputArgs.OutputPath = string(rs[0:endIndex])+"/LghImageCompress/";
 		}
 		getFilelist(inputArgs.LocalPath)
+		fmt.Println("图片保存在文件夹 "+inputArgs.OutputPath)
 	}else{
 		/** 单个 */
 		/** 如果输入文件，那么是单个，允许自定义路径 */
@@ -206,7 +207,7 @@ func exeute()  {
 
 func finish()  {
 	fmt.Printf("继续输入进行压缩或者退出程序：")
-	exeute()
+	execute()
 }
 
 func showTips()  {
@@ -231,16 +232,15 @@ func showTips()  {
 }
 
 type InputArgs struct {
-	OutputPath string
-	LocalPath  string
-	Quality    int
-	Width      int
+	OutputPath string  /** 输出目录 */
+	LocalPath  string  /** 输入的目录或文件路径 */
+	Quality    int     /** 质量 */
+	Width      int     /** 宽度尺寸，像素单位 */
 }
 
 var inputArgs InputArgs
 func main() {
 	showTips()
-	exeute()
-	// pause()
-	// basePath := "C:/Users/lzq/Desktop/usetHeadImages/1/1.jpg 75 200"
+	execute()
+	time.Sleep(5 * time.Minute) /** 如果不是自己点击退出，延时5分钟 */
 }
