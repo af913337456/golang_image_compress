@@ -1,16 +1,16 @@
-±àÒë²½Öè£º
-°²×°golang»·¾³
+### ç¼–è¯‘æ­¥éª¤ï¼š
+å®‰è£…golangç¯å¢ƒ
 
-ÔÚ¿ØÖÆÌ¨ÊäÈë go get "github.com/nfnt/resize"
+åœ¨æ§åˆ¶å°è¾“å…¥ go get "github.com/nfnt/resize"
 
-×îºó go build imageCompress.go
+æœ€å go build imageCompress.go
 
-Ê¹ÓÃ·½·¨£º
-Ë«»÷ imageCompress.exe£¬¸úËæÌáÊ¾¼´¿É
+### ä½¿ç”¨æ–¹æ³•ï¼š
+åŒå‡» imageCompress.exeï¼Œè·Ÿéšæç¤ºå³å¯
 
 /***********************************************/
 
-Compile Step:
+### Compile Step:
 
 config your golang environment;
 
