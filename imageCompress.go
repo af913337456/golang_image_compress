@@ -17,6 +17,8 @@ import (
 	"time"
 	"strings"
 	"bufio"
+	"image"
+	"image/png"
 )
 
 func imageCompress(
@@ -24,54 +26,93 @@ func imageCompress(
 	getDecodeFile func() (*os.File,error),
 	to string,
 	Quality,
-	base int) bool{
-
+	base int,
+	format string) bool{
+	/** 读取文件 */
 	file_origin, err := getDecodeFile()
-	if err != nil {
-		fmt.Println("os.Open(file)");
-		log.Fatal(err)
-		return false
-	}
-
-	origin, err := jpeg.Decode(file_origin)
-	if err != nil {
-		fmt.Println("jpeg.Decode(file_origin)");
-		log.Fatal(err)
-		return false
-	}
 	defer file_origin.Close()
-
-	/** 下面不要采用 jpeg 读取 */
-	temp, err := getReadSizeFile()
+	if err != nil {
+		fmt.Println("os.Open(file)错误");
+		log.Fatal(err)
+		return false
+	}
+	var origin image.Image
+	var config image.Config
+	var temp io.Reader
+	/** 读取尺寸 */
+	temp, err = getReadSizeFile()
 	if err != nil {
 		fmt.Println("os.Open(temp)");
 		log.Fatal(err)
 		return false
 	}
-
-	config,err := jpeg.DecodeConfig(temp);
-	if err != nil {
-		fmt.Println("jpeg.DecodeConfig(temp)");
-		log.Fatal(err)
-		return false
+	var typeImage int64
+	format = strings.ToLower(format)
+	/** jpg 格式 */
+	if format=="jpg" || format =="jpeg" {
+		typeImage = 1
+		origin, err = jpeg.Decode(file_origin)
+		if err != nil {
+			fmt.Println("jpeg.Decode(file_origin)");
+			log.Fatal(err)
+			return false
+		}
+		temp, err = getReadSizeFile()
+		if err != nil {
+			fmt.Println("os.Open(temp)");
+			log.Fatal(err)
+			return false
+		}
+		config,err = jpeg.DecodeConfig(temp);
+		if err != nil {
+			fmt.Println("jpeg.DecodeConfig(temp)");
+			return false
+		}
+	}else if format=="png" {
+		typeImage = 0
+		origin, err = png.Decode(file_origin)
+		if err != nil {
+			fmt.Println("png.Decode(file_origin)");
+			log.Fatal(err)
+			return false
+		}
+		temp, err = getReadSizeFile()
+		if err != nil {
+			fmt.Println("os.Open(temp)");
+			log.Fatal(err)
+			return false
+		}
+		config,err = png.DecodeConfig(temp);
+		if err != nil {
+			fmt.Println("png.DecodeConfig(temp)");
+			return false
+		}
 	}
-
 	/** 做等比缩放 */
 	width  := uint(base) /** 基准 */
 	height := uint(base*config.Height/config.Width)
 
 	canvas := resize.Thumbnail(width, height, origin, resize.Lanczos3)
 	file_out, err := os.Create(to)
+	defer file_out.Close()
 	if err != nil {
 		log.Fatal(err)
 		return false
 	}
-	defer file_out.Close()
-	err = jpeg.Encode(file_out, canvas, &jpeg.Options{Quality})
-	if err!=nil {
-		fmt.Println("压缩图片失败");
-		return false
+	if typeImage==0 {
+		err = png.Encode(file_out, canvas)
+		if err!=nil {
+			fmt.Println("压缩图片失败");
+			return false
+		}
+	}else{
+		err = jpeg.Encode(file_out, canvas, &jpeg.Options{Quality})
+		if err!=nil {
+			fmt.Println("压缩图片失败");
+			return false
+		}
 	}
+
 	return true
 }
 
@@ -107,7 +148,8 @@ func getFilelist(path string) {
 				},
 				outputPath,
 				inputArgs.Quality,
-				inputArgs.Width) {
+				inputArgs.Width,
+				format) {
 				fmt.Println("生成缩略图失败")
 			}else{
 				fmt.Println("生成缩略图成功 "+outputPath)
@@ -183,7 +225,7 @@ func execute()  {
 	}else{
 		/** 单个 */
 		/** 如果输入文件，那么是单个，允许自定义路径 */
-		fmt.Println("开始单张压缩...")
+		fmt.Println("开始单张压缩...") //C:\Users\lzq\Desktop\Apk.jpg 75 200
 		inputArgs.OutputPath = top+"_compress."+format
 		if !imageCompress(
 			func() (io.Reader,error){
@@ -194,7 +236,8 @@ func execute()  {
 			},
 			inputArgs.OutputPath,
 			inputArgs.Quality,
-			inputArgs.Width) {
+			inputArgs.Width,
+			format) {
 			fmt.Println("生成缩略图失败")
 		}else{
 			fmt.Println("生成缩略图成功 "+inputArgs.OutputPath)
@@ -236,6 +279,7 @@ type InputArgs struct {
 	LocalPath  string  /** 输入的目录或文件路径 */
 	Quality    int     /** 质量 */
 	Width      int     /** 宽度尺寸，像素单位 */
+	Format     string  /** 格式 */
 }
 
 var inputArgs InputArgs
